@@ -3,7 +3,7 @@
 //Just for debuging discord->server messages
 //#define DEBUG 1
 
-#define PLUGIN_NAME         "Discord Relay (Ripetx) edit"
+#define PLUGIN_NAME         "Discord Relay (Ripetx) Edit"
 #define PLUGIN_AUTHOR       "log-ical & Buddy"
 #define PLUGIN_DESCRIPTION  "Discord and Server interaction"
 #define PLUGIN_VERSION      "0.8.1"
