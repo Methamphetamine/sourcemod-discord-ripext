@@ -1,5 +1,6 @@
 # sourcemod-discord
-A rewritten version of the old [Cruze03](https://github.com/Cruze03/sourcemod-discord) Discord API for Sourcemod using [ripext](https://github.com/ErikMinekus/sm-ripext)  only. 
+A rewritten version of the old [Deathknife](https://github.com/Deathknife/sourcemod-discord) Discord API for Sourcemod using [ripext](https://github.com/ErikMinekus/sm-ripext)  only. 
+Also [log-ical](https://github.com/log-ical/sp-discordrelay) Discord Relay for new sutff.
 
 # IMPORTANT
 Before you are able to send messages, you have to create a websocket connection with the bot atleast once. Simply, do this:
