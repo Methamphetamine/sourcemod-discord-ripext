@@ -15,7 +15,6 @@
 #include <discord>
 #include <colors>
 #include <geoip>
-#include "includes/rl4d2l_util"
 #undef REQUIRE_EXTENSIONS
 #include <ripext>
 
@@ -796,3 +795,15 @@ void GetHostName(char[] str, int size)
     }
     GetConVarString(hHostName, str, size);
 }  
+
+void StrToLower(char[] arg) {
+    for (int i = 0; i < strlen(arg); i++) {
+        arg[i] = CharToLower(arg[i]);
+    }
+}
+
+int GetCurrentMapLower(char[] buffer, int buflen) {
+    int iBytesWritten = GetCurrentMap(buffer, buflen);
+    StrToLower(buffer);
+    return iBytesWritten;
+}
