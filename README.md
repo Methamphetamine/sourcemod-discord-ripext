@@ -1,5 +1,5 @@
 # sourcemod-discord
-Discord API for Sourcemod. There's a lot more to add. Changes will be happening that will break existing plugins, sorry. Still a bit messy
+Discord API for Sourcemod using only [ripext](https://github.com/ErikMinekus/sm-ripext) version. 
 
 # IMPORTANT
 Before you are able to send messages, you have to create a websocket connection with the bot atleast once. Simply, do this:
