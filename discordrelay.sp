@@ -190,7 +190,6 @@ public Action Timer_CreateBot(Handle timer)
     return Plugin_Stop;
 }
 
-
 public void OnDiscordRelayCvarChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
     g_cvSteamApiKey.GetString(g_sSteamApiKey, sizeof(g_sSteamApiKey));
@@ -224,7 +223,7 @@ public void OnClientPutInServer(int client)
 }
 
 public void OnMapStart()
-{   
+{
     //prevents failed webhook error on server startup
     if(!g_sDiscordWebhook[0])
         return;
@@ -295,256 +294,258 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 
 public void SBPP_OnBanPlayer(int admin, int target, int time, const char[] reason)
 {
-    if(!g_cvPrintSBPPBans.BoolValue)
-        return;
-    DiscordWebHook hook = new DiscordWebHook(g_sDiscordWebhook);
-    hook.SlackMode = false;
+	if(!g_cvPrintSBPPBans.BoolValue)
+		return;
+	
+	DiscordWebHook hook = new DiscordWebHook(g_sDiscordWebhook);
+	hook.SlackMode = false;
 
-    hook.SetAvatar(g_sSBPPAvatar);
-    
-    hook.SetUsername("Player Banned");
-    
-    MessageEmbed Embed = new MessageEmbed();
-    
-    Embed.SetColor("#FF0000");
-    
-    char bsteamid[65];
-    char bplayerName[512];
-    GetClientAuthId(target, AuthId_SteamID64, bsteamid, sizeof(bsteamid), false);
-    Format(bplayerName, sizeof(bplayerName), "[%N](https://www.steamcommunity.com/profiles/%s)", target, bsteamid);
-    //Banned Player Link Embed
+	hook.SetAvatar(g_sSBPPAvatar);
+	
+	hook.SetUsername("Player Banned");
+	
+	MessageEmbed Embed = new MessageEmbed();
+	
+	Embed.SetColor("#FF0000");
+	
+	char bsteamid[65];
+	char bplayerName[512];
+	GetClientAuthId(target, AuthId_SteamID64, bsteamid, sizeof(bsteamid), false);
+	Format(bplayerName, sizeof(bplayerName), "[%N](https://www.steamcommunity.com/profiles/%s)", target, bsteamid);
+	//Banned Player Link Embed
 
+	char asteamid[65];
+	char aplayerName[512];
+	if(!IsValidClient(admin))
+	{
+		Format(aplayerName, sizeof(aplayerName), "Penis NeGrow");
+	}
+	else{
+	GetClientAuthId(admin, AuthId_SteamID64, asteamid, sizeof(asteamid), false);
+	Format(aplayerName, sizeof(aplayerName), "[%N](https://www.steamcommunity.com/profiles/%s)", admin, asteamid);
+	//Admin Link Embed
+	}
 
-    char asteamid[65];
-    char aplayerName[512];
-    if(!IsValidClient(admin))
-    {
-        Format(aplayerName, sizeof(aplayerName), "Penis NeGrow");
-    }
-    else{
-    GetClientAuthId(admin, AuthId_SteamID64, asteamid, sizeof(asteamid), false);
-    Format(aplayerName, sizeof(aplayerName), "[%N](https://www.steamcommunity.com/profiles/%s)", admin, asteamid);
-    //Admin Link Embed
-    }
+	char banMsg[512];
+	Format(banMsg, sizeof(banMsg), "%s has been banned by %s", bplayerName, aplayerName);
+	Embed.AddField("", banMsg, false);
 
-    char banMsg[512];
-    Format(banMsg, sizeof(banMsg), "%s has been banned by %s", bplayerName, aplayerName);
-    Embed.AddField("", banMsg, false);
+	Embed.AddField("Reason: ", reason, true);
+	char sTime[16];
+	IntToString(time, sTime, sizeof(sTime));
+	Embed.AddField("Length: ", sTime, true);
 
+	char CurrentMap[64];
+	//GetCurrentMap(CurrentMap, sizeof(CurrentMap));
+	GetCurrentMapLower(CurrentMap, sizeof(CurrentMap));
+	GetMapName(CurrentMap, CurrentMap, sizeof(CurrentMap));
+	Embed.AddField("Map: ", CurrentMap, true);
+	char sRealTime[32];
+	FormatTime(sRealTime, sizeof(sRealTime), "%m-%d-%Y %I:%M:%S", GetTime());  
+	Embed.AddField("Time: ", sRealTime, true);
 
-    Embed.AddField("Reason: ", reason, true);
-    char sTime[16];
-    IntToString(time, sTime, sizeof(sTime));
-    Embed.AddField("Length: ", sTime, true);
+	char hostname[64];
+	GetHostName(hostname, sizeof(hostname));
+	Embed.SetFooter(hostname, g_sSBPPAvatar);
 
-    char CurrentMap[64];
-    //GetCurrentMap(CurrentMap, sizeof(CurrentMap));
-    GetCurrentMapLower(CurrentMap, sizeof(CurrentMap));
-    GetMapName(CurrentMap, CurrentMap, sizeof(CurrentMap));
-    Embed.AddField("Map: ", CurrentMap, true);
-    char sRealTime[32];
-    FormatTime(sRealTime, sizeof(sRealTime), "%m-%d-%Y %I:%M:%S", GetTime());  
-    Embed.AddField("Time: ", sRealTime, true);
+	Embed.SetTitle("SourceBans");
+	
+	hook.Embed(Embed);
 
-    char hostname[64];
-    GetHostName(hostname, sizeof(hostname));
-    Embed.SetFooter(hostname, g_sSBPPAvatar);
-
-    Embed.SetTitle("SourceBans");
-    
-    hook.Embed(Embed);
-
-    hook.Send();
-    delete Embed;
-    delete hook;
+	hook.Send();
+	delete Embed;
+	delete hook;
 }
+
 public void SourceComms_OnBlockAdded(int admin, int target, int time, int type, char[] reason)
 {
-    if(!g_cvPrintSBPPComms.BoolValue)
-        return;
-    if(type>3)
-        return;
-    DiscordWebHook hook = new DiscordWebHook(g_sDiscordWebhook);
-    hook.SlackMode = true;
+	if(!g_cvPrintSBPPComms.BoolValue)
+		return;
+	
+	if(type>3)
+		return;
+	
+	DiscordWebHook hook = new DiscordWebHook(g_sDiscordWebhook);
+	hook.SlackMode = true;
 
-    hook.SetAvatar(g_sSBPPAvatar);
-    
-    char usrname[32];
-    Format(usrname, sizeof(usrname), "Player %s", CommbanTypes[type]);
-    hook.SetUsername(usrname);
-    
-    MessageEmbed Embed = new MessageEmbed();
-    
-    Embed.SetColor("#6495ED");
-    
-    char bsteamid[65];
-    char bplayerName[512];
-    GetClientAuthId(target, AuthId_SteamID64, bsteamid, sizeof(bsteamid), false);
-    Format(bplayerName, sizeof(bplayerName), "[%N](https://www.steamcommunity.com/profiles/%s)", target, bsteamid);
-    //Banned Player Link Embed
+	hook.SetAvatar(g_sSBPPAvatar);
+	
+	char usrname[32];
+	Format(usrname, sizeof(usrname), "Player %s", CommbanTypes[type]);
+	hook.SetUsername(usrname);
+	
+	MessageEmbed Embed = new MessageEmbed();
+	
+	Embed.SetColor("#6495ED");
+	
+	char bsteamid[65];
+	char bplayerName[512];
+	GetClientAuthId(target, AuthId_SteamID64, bsteamid, sizeof(bsteamid), false);
+	Format(bplayerName, sizeof(bplayerName), "[%N](https://www.steamcommunity.com/profiles/%s)", target, bsteamid);
+	//Banned Player Link Embed
 
+	char asteamid[65];
+	char aplayerName[512];
+	if(!IsValidClient(admin))
+	{
+		Format(aplayerName, sizeof(aplayerName), "Penis NeGrow");
+	}
+	else{
+	GetClientAuthId(admin, AuthId_SteamID64, asteamid, sizeof(asteamid), false);
+	Format(aplayerName, sizeof(aplayerName), "[%N](https://www.steamcommunity.com/profiles/%s)", admin, asteamid);
+	//Admin Link Embed
+	}
 
-    char asteamid[65];
-    char aplayerName[512];
-    if(!IsValidClient(admin))
-    {
-        Format(aplayerName, sizeof(aplayerName), "Penis NeGrow");
-    }
-    else{
-    GetClientAuthId(admin, AuthId_SteamID64, asteamid, sizeof(asteamid), false);
-    Format(aplayerName, sizeof(aplayerName), "[%N](https://www.steamcommunity.com/profiles/%s)", admin, asteamid);
-    //Admin Link Embed
-    }
+	char banMsg[512];
+	Format(banMsg, sizeof(banMsg), "%s has been %s by %s", bplayerName, lCommbanTypes[type], aplayerName);
+	Embed.AddField("", banMsg, false);
 
-    char banMsg[512];
-    Format(banMsg, sizeof(banMsg), "%s has been %s by %s", bplayerName, lCommbanTypes[type], aplayerName);
-    Embed.AddField("", banMsg, false);
+	Embed.AddField("Reason: ", reason, true);
+	char sTime[16];
+	IntToString(time, sTime, sizeof(sTime));
+	Embed.AddField("Length: ", sTime, true);
 
+	Embed.AddField("Type: ", sCommbanTypes[type], true);
+	char CurrentMap[64];
+	//GetCurrentMap(CurrentMap, sizeof(CurrentMap));
+	GetCurrentMapLower(CurrentMap, sizeof(CurrentMap));
+	GetMapName(CurrentMap, CurrentMap, sizeof(CurrentMap));
+	Embed.AddField("Map: ", CurrentMap, true);
+	char sRealTime[32];
+	FormatTime(sRealTime, sizeof(sRealTime), "%m-%d-%Y %I:%M:%S", GetTime()); 
+	Embed.AddField("Time: ", sRealTime, true);
 
-    Embed.AddField("Reason: ", reason, true);
-    char sTime[16];
-    IntToString(time, sTime, sizeof(sTime));
-    Embed.AddField("Length: ", sTime, true);
+	char hostname[64];
+	GetHostName(hostname, sizeof(hostname));
+	Embed.SetFooter(hostname, g_sSBPPAvatar);
 
-    Embed.AddField("Type: ", sCommbanTypes[type], true);
-    char CurrentMap[64];
-    //GetCurrentMap(CurrentMap, sizeof(CurrentMap));
-    GetCurrentMapLower(CurrentMap, sizeof(CurrentMap));
-    GetMapName(CurrentMap, CurrentMap, sizeof(CurrentMap));
-    Embed.AddField("Map: ", CurrentMap, true);
-    char sRealTime[32];
-    FormatTime(sRealTime, sizeof(sRealTime), "%m-%d-%Y %I:%M:%S", GetTime()); 
-    Embed.AddField("Time: ", sRealTime, true);
+	Embed.SetTitle("SourceComms");
+	
+	hook.Embed(Embed);
 
-    char hostname[64];
-    GetHostName(hostname, sizeof(hostname));
-    Embed.SetFooter(hostname, g_sSBPPAvatar);
-
-    Embed.SetTitle("SourceComms");
-    
-    hook.Embed(Embed);
-
-    hook.Send();
-    delete Embed;
-    delete hook;
+	hook.Send();
+	delete Embed;
+	delete hook;
 }
-
 
 public void PrintToDiscord(int client, const char[] color, const char[] msg, any ...)
 {
-    if(!g_cvServerToDiscord.BoolValue)
-        return;
-    if(!g_cvMessage.BoolValue)
-        return;
-    
-    char clientName[36];
-    
-    if(!client || !IsClientConnected(client))
-        return;
-        
-    GetClientName(client, clientName, 36);
-    
-    DiscordWebHook hook = new DiscordWebHook(g_sDiscordWebhook);
-    
-    hook.SlackMode = false;
-    
-    char gIp[48], gCountry[46];
-    GetClientIP(client, gIp, sizeof(gIp), true);
-    GeoipCountry(gIp, gCountry, sizeof(gCountry));
-    Format(gCountry, sizeof(gCountry), "(%s)", gCountry);
+	if(!g_cvServerToDiscord.BoolValue)
+		return;
+	
+	if(!g_cvMessage.BoolValue)
+		return;
+	
+	char clientName[36];
+	
+	if(!client || !IsClientConnected(client))
+		return;
+	
+	GetClientName(client, clientName, 36);
+	
+	DiscordWebHook hook = new DiscordWebHook(g_sDiscordWebhook);
+	
+	hook.SlackMode = false;
+	
+	char gIp[48], gCountry[46];
+	GetClientIP(client, gIp, sizeof(gIp), true);
+	GeoipCountry(gIp, gCountry, sizeof(gCountry));
+	Format(gCountry, sizeof(gCountry), "(%s)", gCountry);
 
-    if(g_cvServerToDiscordAvatars.BoolValue)
-        hook.SetAvatar(playersdata[client].avatarurl);
-    
-    char steamid1[64];
-    GetClientAuthId(client, AuthId_Steam2, steamid1, sizeof(steamid1), false);
-    char buffer[128];
-    Format(buffer, 128, "%s [%s]", clientName, steamid1);
-    hook.SetUsername(buffer);
-    
-    MessageEmbed Embed = new MessageEmbed();
-    
-    Embed.SetColor(color);
-    
-    char steamid[65];
-    char playerName[512];
-    GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid), false);
-    Format(playerName, sizeof(playerName), "[%N](https://www.steamcommunity.com/profiles/%s)", client, steamid);
+	if(g_cvServerToDiscordAvatars.BoolValue)
+		hook.SetAvatar(playersdata[client].avatarurl);
+	
+	char steamid1[64];
+	GetClientAuthId(client, AuthId_Steam2, steamid1, sizeof(steamid1), false);
+	char buffer[128];
+	Format(buffer, 128, "%s [%s]", clientName, steamid1);
+	hook.SetUsername(buffer);
+	
+	MessageEmbed Embed = new MessageEmbed();
+	
+	Embed.SetColor(color);
+	
+	char steamid[65];
+	char playerName[512];
+	GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid), false);
+	Format(playerName, sizeof(playerName), "[%N](https://www.steamcommunity.com/profiles/%s)", client, steamid);
 
-    char desc[512];
-    Format(desc, sizeof(desc, "**%s** %s %s", playerName, msg, gCountry);
-    Embed.SetDescription(desc);
-    
-    hook.Embed(Embed);
+	char desc[512];
+	Format(desc, sizeof(desc, "**%s** %s %s", playerName, msg, gCountry);
+	Embed.SetDescription(desc);
+	
+	hook.Embed(Embed);
 
-    hook.Send();
-    delete Embed;
-    delete hook;
+	hook.Send();
+	delete Embed;
+	delete hook;
 }
 
 public void PrintToDiscordSay(int client, const char[] msg, any ...)
 {
-    if(!g_cvServerToDiscord.BoolValue)
-        return;
+	if(!g_cvServerToDiscord.BoolValue)
+		return;
 
-    DiscordWebHook hook = new DiscordWebHook(g_sDiscordWebhook);
+	DiscordWebHook hook = new DiscordWebHook(g_sDiscordWebhook);
 
-    hook.SlackMode = false;
+	hook.SlackMode = false;
 
-    if(!IsValidClient(client))
-    {
-        if(!g_cvServerMessage.BoolValue)
-            return;
-        hook.SetContent(msg);
-        //we will just assume that if it isn't a valid client then it must be the server
-        hook.SetUsername("Penis NeGrow");
-        hook.Send();
-        return;
-    }
-    
-    char clientName[32];
-    GetClientName(client, clientName, 32);
+	if(!IsValidClient(client))
+	{
+		if(!g_cvServerMessage.BoolValue)
+			return;
+		hook.SetContent(msg);
+		//we will just assume that if it isn't a valid client then it must be the server
+		hook.SetUsername("Penis NeGrow");
+		hook.Send();
+		return;
+	}
+	
+	char clientName[32];
+	GetClientName(client, clientName, 32);
 
-    if(g_cvServerToDiscordAvatars.BoolValue)
-        hook.SetAvatar(playersdata[client].avatarurl);
+	if(g_cvServerToDiscordAvatars.BoolValue)
+		hook.SetAvatar(playersdata[client].avatarurl);
 
-    hook.SetContent(msg);
+	hook.SetContent(msg);
 
-    char steamid[64];
-    GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid), false);
-    char buffer[128];
-    Format(buffer, 128, "%s [%s]", clientName, steamid);
-    hook.SetUsername(buffer);
+	char steamid[64];
+	GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid), false);
+	char buffer[128];
+	Format(buffer, 128, "%s [%s]", clientName, steamid);
+	hook.SetUsername(buffer);
 
-    hook.Send();
-    delete hook;
+	hook.Send();
+	delete hook;
 }
 
 public void PrintToDiscordMapChange(const char[] map, const char[] color)
 {
-    if(!g_cvServerToDiscord.BoolValue)
-        return;
-    if(!g_cvMapChangeMessage.BoolValue)
-        return;
-    DiscordWebHook hook = new DiscordWebHook(g_sDiscordWebhook);
-    
-    hook.SlackMode = false;
-    hook.SetUsername("Смена карты");
-    
-    char buffer[512];
-    Format(buffer, sizeof(buffer), "%d/%d", GetOnlinePlayers(), GetMaxHumanPlayers());
-    
-    char desc[1024];
-    Format(desc, sizeof(desc), "**Карта:** %s\n**Игроки:** %s", map, buffer);
-    
-    MessageEmbed Embed = new MessageEmbed();
-    Embed.SetColor(color);
-    Embed.SetDescription(desc);
-    
-    hook.Embed(Embed);
-    hook.Send();
-    delete Embed;
-    delete hook;
+	if(!g_cvServerToDiscord.BoolValue)
+		return;
+	
+	if(!g_cvMapChangeMessage.BoolValue)
+		return;
+	
+	DiscordWebHook hook = new DiscordWebHook(g_sDiscordWebhook);
+	
+	hook.SlackMode = false;
+	hook.SetUsername("Смена карты");
+	
+	char buffer[512];
+	Format(buffer, sizeof(buffer), "%d/%d", GetOnlinePlayers(), GetMaxHumanPlayers());
+	
+	char desc[1024];
+	Format(desc, sizeof(desc), "**Карта:** %s\n**Игроки:** %s", map, buffer);
+	
+	MessageEmbed Embed = new MessageEmbed();
+	Embed.SetColor(color);
+	Embed.SetDescription(desc);
+	
+	hook.Embed(Embed);
+	hook.Send();
+	delete Embed;
+	delete hook;
 }
 
 public Action Timer_GetGuildList(Handle timer)
@@ -558,7 +559,7 @@ public Action Timer_GetGuildList(Handle timer)
 }
 
 stock void ParseGuilds()
-{	
+{
     g_dBot.GetGuilds(GuildList);
 #if defined DEBUG
     LogError("Calling GetGuilds on g_dBot handle");
