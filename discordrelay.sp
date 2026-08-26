@@ -3,7 +3,7 @@
 //Just for debuging discord->server messages
 //#define DEBUG 1
 
-#define PLUGIN_NAME         "Discord Relay (Ripetx) Edit"
+#define PLUGIN_NAME         "Discord Relay (Ripetx) edit"
 #define PLUGIN_AUTHOR       "log-ical & Buddy"
 #define PLUGIN_DESCRIPTION  "Discord and Server interaction"
 #define PLUGIN_VERSION      "0.8.1"
@@ -15,6 +15,7 @@
 #include <discord>
 #include <colors>
 #include <geoip>
+#include "includes/rl4d2l_util"
 #undef REQUIRE_EXTENSIONS
 #include <ripext>
 
@@ -497,7 +498,7 @@ public void PrintToDiscordSay(int client, const char[] msg, any ...)
             return;
         hook.SetContent(msg);
         //we will just assume that if it isn't a valid client then it must be the server
-        hook.SetUsername("YOUR BOT NAME");
+        hook.SetUsername("Penis NeGrow");
         hook.Send();
         return;
     }
@@ -529,13 +530,13 @@ public void PrintToDiscordMapChange(const char[] map, const char[] color)
     DiscordWebHook hook = new DiscordWebHook(g_sDiscordWebhook);
     
     hook.SlackMode = false;
-    hook.SetUsername("Map Change");
+    hook.SetUsername("Смена карты");
     
     char buffer[512];
     Format(buffer, sizeof(buffer), "%d/%d", GetOnlinePlayers(), GetMaxHumanPlayers());
     
     char desc[1024];
-    Format(desc, sizeof(desc), "**Map:** %s\n**Players:** %s", map, buffer);
+    Format(desc, sizeof(desc), "**Карта:** %s\n**Игроки:** %s", map, buffer);
     
     MessageEmbed Embed = new MessageEmbed();
     Embed.SetColor(color);
@@ -558,7 +559,7 @@ public Action Timer_GetGuildList(Handle timer)
 }
 
 stock void ParseGuilds()
-{
+{	
     g_dBot.GetGuilds(GuildList);
 #if defined DEBUG
     LogError("Calling GetGuilds on g_dBot handle");
@@ -615,7 +616,82 @@ public void ChannelList(DiscordBot bot, const char[] guild, DiscordChannel chl, 
     }
 }
 
-delete author;
+public void OnDiscordMessageSent(DiscordBot bot, DiscordChannel chl, DiscordMessage discordmessage)
+{
+#if defined DEBUG
+    LogError("Discord message sent");
+#endif
+    DiscordUser author = discordmessage.GetAuthor();
+    
+    if(author == null || author.IsBot())
+    {
+#if defined DEBUG
+        LogError("Message from bot or no author, returning");
+#endif
+        return;
+    }
+    
+    char id[20];
+    chl.GetID(id, sizeof(id));
+        
+    if(StrEqual(id, g_sChannelId))
+    {
+        char message[512];
+        char discorduser[32];
+        discordmessage.GetContent(message, sizeof(message));
+        author.GetUsername(discorduser, sizeof(discorduser));
+    
+        CPrintToChatAll("%s[%sDiscord%s] %s%s%s: %s", g_msg_textcol, g_msg_varcol, g_msg_textcol, g_msg_varcol, discorduser, g_msg_textcol, message);
+        
+#if defined DEBUG
+        LogError("Printing message '%s' from '%s' to server chat", message, discorduser);
+#endif
+    }
+    
+    if(StrEqual(id, g_sRCONChannelId))
+    {
+#if defined DEBUG
+        LogError("RCON channel detected! Processing RCON command");
+#endif
+        
+        char message[512];
+        discordmessage.GetContent(message, sizeof(message));
+        
+#if defined DEBUG
+        LogError("RCON command received: %s", message);
+#endif
+        
+        if(g_cvPrintRCONResponse.BoolValue)
+        {
+#if defined DEBUG
+            LogError("PrintRCONResponse is enabled, executing command with response");
+#endif
+            
+            char Response[2048];
+            char fResponse[2054];
+            ServerCommandEx(Response, sizeof(Response), message);
+            
+#if defined DEBUG
+            LogError("Command executed, response length: %d", strlen(Response));
+#endif
+            
+            Format(fResponse, sizeof(fResponse), "``` %s ```", Response);
+            DiscordWebHook hook = new DiscordWebHook(g_sRCONWebhook);
+            hook.SlackMode = false;
+            hook.SetContent(fResponse);
+            hook.SetUsername("DeCrow");
+            hook.Send();
+            delete hook;
+        }
+        else
+        {
+#if defined DEBUG
+            LogError("PrintRCONResponse is disabled, executing command without response");
+#endif
+            ServerCommand(message);
+        }
+    }
+}
 
 stock void SteamAPIRequest(int client) {
     char url[1024];
@@ -651,7 +727,7 @@ public void SteamResponse_Callback(HTTPResponse response, int client) {
 	
 	if(g_cvConnectMessage.BoolValue)
 		PrintToDiscord(client, GREEN, "connected");
-
+		
 	delete objects;
 }
 
@@ -723,16 +799,4 @@ void GetHostName(char[] str, int size)
         }
     }
     GetConVarString(hHostName, str, size);
-}  
-
-void StrToLower(char[] arg) {
-    for (int i = 0; i < strlen(arg); i++) {
-        arg[i] = CharToLower(arg[i]);
-    }
-}
-
-int GetCurrentMapLower(char[] buffer, int buflen) {
-    int iBytesWritten = GetCurrentMap(buffer, buflen);
-    StrToLower(buffer);
-    return iBytesWritten;
 }
