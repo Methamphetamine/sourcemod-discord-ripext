@@ -778,7 +778,7 @@ stock int GetOnlinePlayers()
 {
 	int count;
 	for(int i = 1; i <= MaxClients; i++)
-	{	
+	{
 		if(IsClientConnected(i) && !IsFakeClient(i) && !IsClientSourceTV(i))
 		{
 			count++;
