@@ -615,80 +615,7 @@ public void ChannelList(DiscordBot bot, const char[] guild, DiscordChannel chl, 
     }
 }
 
-public void OnDiscordMessageSent(DiscordBot bot, DiscordChannel chl, DiscordMessage discordmessage)
-{
-#if defined DEBUG
-    LogError("Discord message sent");
-#endif
-    DiscordUser author = discordmessage.GetAuthor();
-    if(author.IsBot()) 
-    {
-#if defined DEBUG
-        LogError("Message from bot, returning");
-#endif
-        delete author;
-        return;
-    }
-    char id[20];
-    chl.GetID(id, sizeof(id));
-        
-    if(StrEqual(id, g_sChannelId))
-    {
-        char message[512];
-        char discorduser[32];
-        discordmessage.GetContent(message, sizeof(message));
-        author.GetUsername(discorduser, sizeof(discorduser));
-    
-        CPrintToChatAll("%s[%sDiscord%s] %s%s%s: %s", g_msg_textcol, g_msg_varcol, g_msg_textcol, g_msg_varcol, discorduser, g_msg_textcol, message);
-        delete author;
-#if defined DEBUG
-        LogError("Printing message '%s' from '%s to server chat", message, discorduser);
-#endif
-    }
-    if(StrEqual(id, g_sRCONChannelId))
-    {
-        #if defined DEBUG
-        LogError("RCON channel detected! Processing RCON command");
-        #endif
-        
-        char message[512];
-        discordmessage.GetContent(message, sizeof(message));
-        
-        #if defined DEBUG
-        LogError("RCON command received: %s", message);
-        #endif
-        
-        if(g_cvPrintRCONResponse.BoolValue)
-        {
-            #if defined DEBUG
-            LogError("PrintRCONResponse is enabled, executing command with response");
-            #endif
-            
-            char Response[2048];
-            char fResponse[2054];
-            ServerCommandEx(Response, sizeof(Response), message);
-            
-            #if defined DEBUG
-            LogError("Command executed, response length: %d", strlen(Response));
-            #endif
-            
-            Format(fResponse, sizeof(fResponse), "``` %s ```", Response);
-            DiscordWebHook hook = new DiscordWebHook(g_sRCONWebhook);
-            hook.SlackMode = false;
-            hook.SetContent(fResponse);
-            hook.SetUsername("YOUR RCON BOT NAME");
-            hook.Send();
-            delete hook;
-        }
-        else
-        {
-            #if defined DEBUG
-            LogError("PrintRCONResponse is disabled, executing command without response");
-            #endif
-            ServerCommand(message);
-        }
-    }
-}
+delete author;
 
 stock void SteamAPIRequest(int client) {
     char url[1024];
@@ -724,6 +651,8 @@ public void SteamResponse_Callback(HTTPResponse response, int client) {
 	
 	if(g_cvConnectMessage.BoolValue)
 		PrintToDiscord(client, GREEN, "connected");
+
+	delete objects;
 }
 
 bool GetMapName(const char[] mapId, char[] mapName, int iLength)
