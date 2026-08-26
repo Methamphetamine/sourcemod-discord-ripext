@@ -3,7 +3,7 @@
 //Just for debuging discord->server messages
 //#define DEBUG 1
 
-#define PLUGIN_NAME         "Discord Relay (Ripetx) edit"
+#define PLUGIN_NAME         "Discord Relay (Ripetx) Edit"
 #define PLUGIN_AUTHOR       "log-ical & Buddy"
 #define PLUGIN_DESCRIPTION  "Discord and Server interaction"
 #define PLUGIN_VERSION      "0.8.1"
@@ -15,7 +15,6 @@
 #include <discord>
 #include <colors>
 #include <geoip>
-#include "includes/rl4d2l_util"
 #undef REQUIRE_EXTENSIONS
 #include <ripext>
 
@@ -799,4 +798,16 @@ void GetHostName(char[] str, int size)
         }
     }
     GetConVarString(hHostName, str, size);
+}
+
+void StrToLower(char[] arg) {
+    for (int i = 0; i < strlen(arg); i++) {
+        arg[i] = CharToLower(arg[i]);
+    }
+}
+
+int GetCurrentMapLower(char[] buffer, int buflen) {
+    int iBytesWritten = GetCurrentMap(buffer, buflen);
+    StrToLower(buffer);
+    return iBytesWritten;
 }
