@@ -727,7 +727,7 @@ public void SteamResponse_Callback(HTTPResponse response, int client) {
 	
 	if(g_cvConnectMessage.BoolValue)
 		PrintToDiscord(client, GREEN, "connected");
-		
+	
 	delete objects;
 }
 
