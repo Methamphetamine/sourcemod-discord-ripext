@@ -496,7 +496,7 @@ public void PrintToDiscordSay(int client, const char[] msg, any ...)
 			return;
 		hook.SetContent(msg);
 		//we will just assume that if it isn't a valid client then it must be the server
-		hook.SetUsername("Penis NeGrow");
+		hook.SetUsername("YOUR BOT NAME");
 		hook.Send();
 		return;
 	}
@@ -530,13 +530,13 @@ public void PrintToDiscordMapChange(const char[] map, const char[] color)
 	DiscordWebHook hook = new DiscordWebHook(g_sDiscordWebhook);
 	
 	hook.SlackMode = false;
-	hook.SetUsername("Смена карты");
+	hook.SetUsername("Map Change");
 	
 	char buffer[512];
 	Format(buffer, sizeof(buffer), "%d/%d", GetOnlinePlayers(), GetMaxHumanPlayers());
 	
 	char desc[1024];
-	Format(desc, sizeof(desc), "**Карта:** %s\n**Игроки:** %s", map, buffer);
+	Format(desc, sizeof(desc), "**Map:** %s\n**Players:** %s", map, buffer);
 	
 	MessageEmbed Embed = new MessageEmbed();
 	Embed.SetColor(color);
@@ -679,7 +679,7 @@ public void OnDiscordMessageSent(DiscordBot bot, DiscordChannel chl, DiscordMess
             DiscordWebHook hook = new DiscordWebHook(g_sRCONWebhook);
             hook.SlackMode = false;
             hook.SetContent(fResponse);
-            hook.SetUsername("DeCrow");
+            hook.SetUsername("YOUR RCON BOT NAME");
             hook.Send();
             delete hook;
         }
