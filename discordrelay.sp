@@ -6,7 +6,7 @@
 #define PLUGIN_NAME         "Discord Relay (Ripetx) Edit"
 #define PLUGIN_AUTHOR       "log-ical & Buddy"
 #define PLUGIN_DESCRIPTION  "Discord and Server interaction"
-#define PLUGIN_VERSION      "0.8.1"
+#define PLUGIN_VERSION      "0.8.2"
 #define PLUGIN_URL          "https://github.com/IsThatLogic/sp-discordrelay"
 
 #include <sourcemod>
