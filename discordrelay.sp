@@ -318,7 +318,7 @@ public void SBPP_OnBanPlayer(int admin, int target, int time, const char[] reaso
 	char aplayerName[512];
 	if(!IsValidClient(admin))
 	{
-		Format(aplayerName, sizeof(aplayerName), "Penis NeGrow");
+		Format(aplayerName, sizeof(aplayerName), "YOUR BOT NAME");
 	}
 	else{
 	GetClientAuthId(admin, AuthId_SteamID64, asteamid, sizeof(asteamid), false);
@@ -388,7 +388,7 @@ public void SourceComms_OnBlockAdded(int admin, int target, int time, int type, 
 	char aplayerName[512];
 	if(!IsValidClient(admin))
 	{
-		Format(aplayerName, sizeof(aplayerName), "Penis NeGrow");
+		Format(aplayerName, sizeof(aplayerName), "YOUR RCON BOT NAME");
 	}
 	else{
 	GetClientAuthId(admin, AuthId_SteamID64, asteamid, sizeof(asteamid), false);
@@ -622,19 +622,21 @@ public void OnDiscordMessageSent(DiscordBot bot, DiscordChannel chl, DiscordMess
     LogError("Discord message sent");
 #endif
     DiscordUser author = discordmessage.GetAuthor();
+    bool shouldDeleteAuthor = (author != null);
     
-    if(author == null || author.IsBot())
+    if(shouldDeleteAuthor && author.IsBot())
     {
 #if defined DEBUG
-        LogError("Message from bot or no author, returning");
+        LogError("Message from bot, returning");
 #endif
+        delete author;
         return;
     }
     
     char id[20];
     chl.GetID(id, sizeof(id));
         
-    if(StrEqual(id, g_sChannelId))
+    if(StrEqual(id, g_sChannelId) && shouldDeleteAuthor)
     {
         char message[512];
         char discorduser[32];
@@ -690,6 +692,10 @@ public void OnDiscordMessageSent(DiscordBot bot, DiscordChannel chl, DiscordMess
 #endif
             ServerCommand(message);
         }
+    }
+    
+    if(shouldDeleteAuthor) {
+        delete author;
     }
 }
 
