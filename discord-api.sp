@@ -403,6 +403,9 @@ public void OnGetMessageCallback(HTTPResponse response, any value) {
     Handle fwd = view_as<Handle>(fwdInt);
     
     if(response.Status != HTTPStatus_OK) {
+        if(response.Data != null) {
+            delete view_as<Handle>(response.Data);
+        }
         //LogError("[DISCORD] GetMessages failed with status %d", response.Status);
         CreateTimer(Bot.MessageCheckInterval, CheckMessageTimer, hObj);
         return;
@@ -594,6 +597,10 @@ public void GetGuildChannelsCallback(HTTPResponse response, any value) {
 	UpdateRateLimits(response, route);
 	
 	if(response.Status != HTTPStatus_OK) {
+		if(response.Data != null) {
+			delete view_as<Handle>(response.Data);
+		}
+		
 		if(response.Status == HTTPStatus_TooManyRequests || response.Status == HTTPStatus_InternalServerError) {
 			delete dp;
 			
@@ -764,6 +771,10 @@ public void OnGetGuildRolesComplete(HTTPResponse response, any datapack) {
     UpdateRateLimits(response, route);
     
     if(response.Status != HTTPStatus_OK) {
+        if(response.Data != null) {
+            delete view_as<Handle>(response.Data);
+        }
+        
         if(response.Status == HTTPStatus_TooManyRequests || response.Status == HTTPStatus_InternalServerError) {
             dp.Reset();
             dp.WriteCell(bot);
@@ -944,7 +955,7 @@ static void GetGuildsSendRequest(DiscordBot bot, DataPack dp) {
 public Action GetGuildsDelayed(Handle timer, any data) {
     DataPack dp = view_as<DataPack>(data);
     dp.Reset();
-    DiscordBot bot = dp.ReadCell(); 
+    DiscordBot bot = dp.ReadCell();
     GetGuildsSendRequest(bot, dp);
     return Plugin_Stop;
 }
@@ -963,6 +974,10 @@ public void GetGuildsCallback(HTTPResponse response, any value) {
     UpdateRateLimits(response, route);
     
     if(response.Status != HTTPStatus_OK) {
+        if(response.Data != null) {
+            delete view_as<Handle>(response.Data);
+        }
+        
         if(response.Status == HTTPStatus_TooManyRequests || response.Status == HTTPStatus_InternalServerError) {
             dp.Reset();
             dp.WriteCell(bot); 
@@ -1107,16 +1122,25 @@ public void OnGetMembersCallback(HTTPResponse response, any value) {
     UpdateRateLimits(response, route);
     
     if(response.Status != HTTPStatus_OK) {
-        if(response.Status == HTTPStatus_TooManyRequests || response.Status == HTTPStatus_InternalServerError) {
-            GetMembers(hData); return;
+        if(response.Data != null) {
+            delete view_as<Handle>(response.Data);
         }
-        delete hData; if(fwd != null) delete fwd; return;
+        
+        if(response.Status == HTTPStatus_TooManyRequests || response.Status == HTTPStatus_InternalServerError) {
+            GetMembers(hData);
+            return;
+        }
+        delete hData;
+        if(fwd != null) delete fwd;
+        return;
     }
     
     JSON data = response.Data;
     if(data != null && fwd != null) {
         Call_StartForward(fwd);
-        Call_PushCell(bot); Call_PushString(guild); Call_PushCell(data);
+        Call_PushCell(bot);
+        Call_PushString(guild);
+        Call_PushCell(data);
         Call_Finish();
     }
     
@@ -1124,22 +1148,26 @@ public void OnGetMembersCallback(HTTPResponse response, any value) {
         JSONArray hJson = view_as<JSONArray>(data);
         int size = hJson.Length;
         int limit = hData.GetInt("limit");
+        
         if(size == limit && size > 0) {
             JSONObject hLast = view_as<JSONObject>(hJson.Get(size - 1));
             JSONObject userObj = view_as<JSONObject>(hLast.Get("user"));
             char lastID[32];
+            
             if(userObj != null) {
                 userObj.GetString("id", lastID, sizeof(lastID));
                 delete userObj;
             }
+            
             hData.SetString("afterID", lastID);
             delete hLast;
             delete hJson;
             GetMembers(hData);
             return;
         }
+        
         delete hJson;
-    } 
+    }
     else if (data != null) {
         delete data;
     }
