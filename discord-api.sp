@@ -403,9 +403,6 @@ public void OnGetMessageCallback(HTTPResponse response, any value) {
     Handle fwd = view_as<Handle>(fwdInt);
     
     if(response.Status != HTTPStatus_OK) {
-        if(response.Data != null) {
-            delete view_as<Handle>(response.Data);
-        }
         //LogError("[DISCORD] GetMessages failed with status %d", response.Status);
         CreateTimer(Bot.MessageCheckInterval, CheckMessageTimer, hObj);
         return;
@@ -597,10 +594,6 @@ public void GetGuildChannelsCallback(HTTPResponse response, any value) {
 	UpdateRateLimits(response, route);
 	
 	if(response.Status != HTTPStatus_OK) {
-		if(response.Data != null) {
-			delete view_as<Handle>(response.Data);
-		}
-		
 		if(response.Status == HTTPStatus_TooManyRequests || response.Status == HTTPStatus_InternalServerError) {
 			delete dp;
 			
@@ -771,10 +764,6 @@ public void OnGetGuildRolesComplete(HTTPResponse response, any datapack) {
     UpdateRateLimits(response, route);
     
     if(response.Status != HTTPStatus_OK) {
-        if(response.Data != null) {
-            delete view_as<Handle>(response.Data);
-        }
-        
         if(response.Status == HTTPStatus_TooManyRequests || response.Status == HTTPStatus_InternalServerError) {
             dp.Reset();
             dp.WriteCell(bot);
@@ -974,10 +963,6 @@ public void GetGuildsCallback(HTTPResponse response, any value) {
     UpdateRateLimits(response, route);
     
     if(response.Status != HTTPStatus_OK) {
-        if(response.Data != null) {
-            delete view_as<Handle>(response.Data);
-        }
-        
         if(response.Status == HTTPStatus_TooManyRequests || response.Status == HTTPStatus_InternalServerError) {
             dp.Reset();
             dp.WriteCell(bot); 
@@ -1122,10 +1107,6 @@ public void OnGetMembersCallback(HTTPResponse response, any value) {
     UpdateRateLimits(response, route);
     
     if(response.Status != HTTPStatus_OK) {
-        if(response.Data != null) {
-            delete view_as<Handle>(response.Data);
-        }
-        
         if(response.Status == HTTPStatus_TooManyRequests || response.Status == HTTPStatus_InternalServerError) {
             GetMembers(hData);
             return;
